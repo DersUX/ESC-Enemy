@@ -588,10 +588,6 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   _visualRoot: {fileID: 9000000000000000002}
   _body: {fileID: 3061907868840847557}
-  _duration: 0.22
-  _squashAmplitude: 0.22
-  _flashStrength: 1
-  _flashFadeExponent: 3
 --- !u!1 &9000000000000000001
 GameObject:
   m_ObjectHideFlags: 0

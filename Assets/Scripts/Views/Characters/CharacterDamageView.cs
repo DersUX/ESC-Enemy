@@ -8,10 +8,7 @@ namespace EcsEnemy
 	{
 		[SerializeField] private Transform _visualRoot;
 		[SerializeField] private SpriteRenderer _body;
-		[SerializeField, Min(0.001f)] private float _duration = 0.22f;
-		[SerializeField, Range(0f, 0.5f)] private float _squashAmplitude = 0.22f;
-		[SerializeField, Range(0f, 1f)] private float _flashStrength = 1f;
-		[SerializeField, Min(0.001f)] private float _flashFadeExponent = 3f;
+		private DamageFeedbackConfig _config;
 
 		private Vector3 _initialScale;
 		private Color _initialColor;
@@ -28,8 +25,15 @@ namespace EcsEnemy
 			_initialized = true;
 		}
 
+		public void Configure(DamageFeedbackConfig config)
+		{
+			Utils.AssertIsNotNull(config);
+			_config = config;
+		}
+
 		public void PlayHit()
 		{
+			Utils.AssertIsNotNull(_config);
 			_startTime = Time.time;
 			_playing = true;
 			ApplyHit(0f);
@@ -40,7 +44,7 @@ namespace EcsEnemy
 			if (!_playing)
 				return;
 
-			float progress = (Time.time - _startTime) / Mathf.Max(0.001f, _duration);
+			float progress = (Time.time - _startTime) / _config.Duration;
 			if (progress >= 1f)
 			{
 				ResetHit();
@@ -53,10 +57,10 @@ namespace EcsEnemy
 		private void ApplyHit(float progress)
 		{
 			float remaining = 1f - progress;
-			float squash = Mathf.Sin(progress * Mathf.PI * 2f) * remaining * _squashAmplitude;
+			float squash = Mathf.Sin(progress * Mathf.PI * 2f) * remaining * _config.SquashAmplitude;
 			_visualRoot.localScale = Vector3.Scale(_initialScale, new Vector3(1f + squash, 1f - squash, 1f));
 
-			float flash = Mathf.Pow(remaining, Mathf.Max(0.001f, _flashFadeExponent)) * _flashStrength;
+			float flash = Mathf.Pow(remaining, _config.FlashFadeExponent) * _config.FlashStrength;
 			Color color = Color.Lerp(_initialColor, Color.white, flash);
 			color.a = _initialColor.a;
 			_body.color = color;

@@ -5,7 +5,6 @@ namespace EcsEnemy
 {
 	public class DeathDetectionSystem : ISystem
 	{
-		private const float DefaultRespawnDelay = 3f;
 
 		public World World
 		{
@@ -13,7 +12,7 @@ namespace EcsEnemy
 			set;
 		}
 
-		private readonly float _respawnDelay;
+		private readonly EnemySpawnConfig _config;
 
 		private Filter _characters;
 		private Stash<Health> _healthStash;
@@ -23,9 +22,9 @@ namespace EcsEnemy
 		private Stash<Position> _positionStash;
 		private Stash<FollowTarget> _followTargetStash;
 
-		public DeathDetectionSystem(float respawnDelay = DefaultRespawnDelay)
+		public DeathDetectionSystem(EnemySpawnConfig config)
 		{
-			_respawnDelay = Mathf.Max(0f, respawnDelay);
+			_config = config;
 		}
 
 		public void OnAwake()
@@ -60,7 +59,7 @@ namespace EcsEnemy
 					Entity respawnEntity = World.CreateEntity();
 					_delayedSpawnRequestStash.Set(respawnEntity, new DelayedEnemySpawnRequest
 					{
-						Delay = _respawnDelay,
+						Delay = _config.RespawnDelay,
 						Position = _positionStash.Get(entity).Value,
 						Target = _followTargetStash.Get(entity).Target
 					});

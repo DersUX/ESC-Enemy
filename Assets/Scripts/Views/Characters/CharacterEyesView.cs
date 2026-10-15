@@ -5,8 +5,6 @@ namespace EcsEnemy
 {
 	public class CharacterEyesView : MonoBehaviour
 	{
-		private const float MinBlinkCountdown = 1.5f;
-		private const float MaxBlinkCountdown = 4f;
 		private const float InactiveBlinkTime = -1f;
 
 		[SerializeField] private Transform _leftEye;
@@ -57,7 +55,7 @@ namespace EcsEnemy
 			_rightPupil.localPosition = _rightPupilPosition;
 		}
 
-		public EyeAnimation CreateAnimation(Vector2 position)
+		public EyeAnimation CreateAnimation(Vector2 position, EyeAnimationConfig config)
 		{
 			CaptureInitialState();
 			return new EyeAnimation
@@ -78,7 +76,7 @@ namespace EcsEnemy
 				RightPupilPosition = _rightPupilPosition,
 
 				PreviousPosition = position,
-				BlinkCountdown = Random.Range(MinBlinkCountdown, MaxBlinkCountdown),
+				BlinkCountdown = Random.Range(config.InitialBlinkInterval.x, config.InitialBlinkInterval.y),
 				BlinkTime = InactiveBlinkTime
 			};
 		}

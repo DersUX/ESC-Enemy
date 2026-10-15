@@ -5,8 +5,9 @@ namespace EcsEnemy
 {
 	public class CombatPresentationSystem : ISystem
 	{
-		private const float HitEffectRadius = 0.4f;
-		private const float DeathEffectRadius = 0.75f;
+		private readonly CombatEffectsConfig _config;
+
+		public CombatPresentationSystem(CombatEffectsConfig config) => _config = config;
 
 		public World World
 		{
@@ -28,7 +29,7 @@ namespace EcsEnemy
 			_attackStash = World.GetStash<AttackVisualRequest>();
 			_hitStash = World.GetStash<DamageVisualRequest>();
 			_transformStash = World.GetStash<TransformView>();
-			_effects = new CombatEffects();
+			_effects = new CombatEffects(_config);
 		}
 
 		public void OnUpdate(float deltaTime)
@@ -54,7 +55,7 @@ namespace EcsEnemy
 						damageView.PlayHit();
 				}
 
-				_effects.Play(hit.Position, hit.Fatal ? DeathEffectRadius : HitEffectRadius,
+				_effects.Play(hit.Position, hit.Fatal ? _config.DeathRadius : _config.HitRadius,
 					hit.Fatal ? CombatEffectKind.Death : CombatEffectKind.Hit);
 				World.RemoveEntity(entity);
 			}

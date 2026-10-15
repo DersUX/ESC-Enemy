@@ -5,7 +5,9 @@ namespace EcsEnemy
 {
 	public class ApplyDamageSystem : ISystem
 	{
-		private const float KnockbackDuration = 0.18f;
+		private readonly KnockbackConfig _config;
+
+		public ApplyDamageSystem(KnockbackConfig config) => _config = config;
 
 		public World World
 		{
@@ -61,7 +63,7 @@ namespace EcsEnemy
 
 						if (health.Value > 0 && damageRequest.Impulse.sqrMagnitude > 0f)
 							_knockbacks.Set(target,
-								new Knockback { Velocity = damageRequest.Impulse, Remaining = KnockbackDuration });
+								new Knockback { Velocity = damageRequest.Impulse, Remaining = _config.Duration });
 					}
 				}
 

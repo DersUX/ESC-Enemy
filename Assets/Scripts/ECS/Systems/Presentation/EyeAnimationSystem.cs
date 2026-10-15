@@ -5,19 +5,12 @@ namespace EcsEnemy
 {
 	public class EyeAnimationSystem : ISystem
 	{
-		private const float BlinkDuration = 0.18f;
+		private readonly EyeAnimationConfig _config;
+
+		public EyeAnimationSystem(EyeAnimationConfig config) => _config = config;
+
 		private const float InactiveBlinkTime = -1f;
 		private const float FullEyeOpenness = 1f;
-		private const float LookResponseRate = 12f;
-
-		private const float MinEyeOpenness = 0.06f;
-		private const float MinLookDisplacement = 0.001f;
-
-		private const float MinBlinkInterval = 2f;
-		private const float MaxBlinkInterval = 5f;
-
-		private const float MaxEyeOffset = 0.025f;
-		private const float MaxPupilOffset = 0.2f;
 
 		public World World
 		{
@@ -50,17 +43,17 @@ namespace EcsEnemy
 
 				animation.PreviousPosition = position;
 
-				if (displacement.sqrMagnitude > MinLookDisplacement * MinLookDisplacement)
+				if (displacement.sqrMagnitude > _config.MinLookDisplacement * _config.MinLookDisplacement)
 				{
 					animation.LookDirection = Vector2.Lerp(animation.LookDirection,
-						displacement.normalized, 1f - Mathf.Exp(-LookResponseRate * deltaTime));
+						displacement.normalized, 1f - Mathf.Exp(-_config.LookResponseRate * deltaTime));
 				}
 
 				animation.BlinkCountdown -= deltaTime;
 				if (animation.BlinkCountdown <= 0f && animation.BlinkTime < 0f)
 				{
 					animation.BlinkTime = 0f;
-					animation.BlinkCountdown = Random.Range(MinBlinkInterval, MaxBlinkInterval);
+					animation.BlinkCountdown = Random.Range(_config.BlinkInterval.x, _config.BlinkInterval.y);
 				}
 
 				float openness = FullEyeOpenness;
@@ -68,15 +61,15 @@ namespace EcsEnemy
 				{
 					animation.BlinkTime += deltaTime;
 
-					if (animation.BlinkTime >= BlinkDuration)
+					if (animation.BlinkTime >= _config.BlinkDuration)
 						animation.BlinkTime = InactiveBlinkTime;
 					else
-						openness = Mathf.Max(MinEyeOpenness,
-							FullEyeOpenness - Mathf.Sin(animation.BlinkTime / BlinkDuration * Mathf.PI));
+						openness = Mathf.Max(_config.MinOpenness,
+							FullEyeOpenness - Mathf.Sin(animation.BlinkTime / _config.BlinkDuration * Mathf.PI));
 				}
 
-				Vector3 eyeOffset = animation.LookDirection * MaxEyeOffset;
-				Vector3 pupilOffset = animation.LookDirection * MaxPupilOffset;
+				Vector3 eyeOffset = animation.LookDirection * _config.MaxEyeOffset;
+				Vector3 pupilOffset = animation.LookDirection * _config.MaxPupilOffset;
 
 				ApplyEye(animation.LeftEye, animation.LeftEyePosition + eyeOffset, animation.LeftEyeScale, openness);
 				ApplyEye(animation.RightEye, animation.RightEyePosition + eyeOffset, animation.RightEyeScale, openness);

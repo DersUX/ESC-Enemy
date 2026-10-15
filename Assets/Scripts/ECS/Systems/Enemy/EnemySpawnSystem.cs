@@ -6,9 +6,6 @@ namespace EcsEnemy
 {
 	public class EnemySpawnSystem : ISystem
 	{
-		private const float EnemyRadius = 0.4f;
-		private const int InitialEnemyHealth = 100;
-
 		public World World
 		{
 			get;
@@ -16,18 +13,18 @@ namespace EcsEnemy
 		}
 
 		private readonly IEnemyPool _pool;
-		private readonly float _speed;
-		private readonly float _stopDistance;
+		private readonly EnemyConfig _config;
+		private readonly EyeAnimationConfig _eyes;
 		private readonly Vector2 _mapHalfSize;
 		private Filter _requests;
 		private Stash<EnemySpawnRequest> _requestStash;
 
-		public EnemySpawnSystem(IEnemyPool pool, float speed, float stopDistance, Vector2 movementBounds)
+		public EnemySpawnSystem(IEnemyPool pool, EnemyConfig config, ArenaConfig arena, EyeAnimationConfig eyes)
 		{
 			_pool = pool;
-			_speed = speed;
-			_stopDistance = stopDistance;
-			_mapHalfSize = new Vector2(Mathf.Abs(movementBounds.x), Mathf.Abs(movementBounds.y));
+			_config = config;
+			_eyes = eyes;
+			_mapHalfSize = arena.HalfSize;
 		}
 
 		public void OnAwake()
@@ -57,7 +54,7 @@ namespace EcsEnemy
 			try
 			{
 				Vector2 spawnPosition = MovementBounds.Clamp(request.Position,
-					MovementBounds.GetCenterLimits(_mapHalfSize, EnemyRadius));
+					MovementBounds.GetCenterLimits(_mapHalfSize, _config.Radius));
 
 				var position = new Vector3(spawnPosition.x, spawnPosition.y, view.transform.position.z);
 				_pool.Prepare(view, position);
@@ -72,18 +69,18 @@ namespace EcsEnemy
 				World.GetStash<EnemyPoolReference>().Set(enemy, new EnemyPoolReference { View = view });
 				World.GetStash<InputMovementDirection>().Set(enemy);
 				World.GetStash<Position>().Set(enemy, new Position { Value = spawnPosition });
-				World.GetStash<CollisionRadius>().Set(enemy, new CollisionRadius { Radius = EnemyRadius });
-				World.GetStash<Movement>().Set(enemy, new Movement { Speed = _speed, MapHalfSize = _mapHalfSize });
+				World.GetStash<CollisionRadius>().Set(enemy, new CollisionRadius { Radius = _config.Radius });
+				World.GetStash<Movement>().Set(enemy, new Movement { Speed = _config.MoveSpeed, MapHalfSize = _mapHalfSize });
 				World.GetStash<TransformView>().Set(enemy, new TransformView { Value = view.transform });
-				World.GetStash<EyeAnimation>().Set(enemy, view.CreateAnimation(spawnPosition));
+				World.GetStash<EyeAnimation>().Set(enemy, view.CreateAnimation(spawnPosition, _eyes));
 
 				World.GetStash<FollowTarget>().Set(enemy, new FollowTarget
 				{
 					Target = request.Target,
-					StopDistance = _stopDistance
+					StopDistance = _config.StopDistance
 				});
 
-				World.GetStash<Health>().Set(enemy, new Health { Value = InitialEnemyHealth });
+				World.GetStash<Health>().Set(enemy, new Health { Value = _config.InitialHealth });
 				_pool.Activate(view);
 			}
 			catch

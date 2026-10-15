@@ -6,14 +6,14 @@ namespace Views
 {
 	public class EnemyPoolView : MonoBehaviour, IEnemyPoolView
 	{
-		[SerializeField] private CharacterEyesView _enemyPrefab;
+		private CharacterEyesView _enemyPrefab;
+		private DamageFeedbackConfig _damageFeedback;
 
 		[Space] [SerializeField] private Transform _activeContainer;
 		[SerializeField] private Transform _inactiveContainer;
 
 		private void Awake()
 		{
-			Utils.AssertIsNotNull(_enemyPrefab);
 			Utils.AssertIsNotNull(_activeContainer);
 			Utils.AssertIsNotNull(_inactiveContainer);
 
@@ -22,12 +22,22 @@ namespace Views
 					"Inactive container must not contain the active container or EnemyPoolView.");
 		}
 
+		public void Configure(EnemyConfig config, DamageFeedbackConfig damageFeedback)
+		{
+			Utils.AssertIsNotNull(config);
+			Utils.AssertIsNotNull(damageFeedback);
+			_enemyPrefab = config.Prefab;
+			_damageFeedback = damageFeedback;
+		}
+
 		public CharacterEyesView CreateInstance()
 		{
+			Utils.AssertIsNotNull(_enemyPrefab);
 			_inactiveContainer.gameObject.SetActive(false);
 			CharacterEyesView view = Instantiate(_enemyPrefab, _inactiveContainer);
 
 			view.gameObject.SetActive(false);
+			view.GetComponent<CharacterDamageView>().Configure(_damageFeedback);
 			view.ResetVisualState();
 
 			return view;

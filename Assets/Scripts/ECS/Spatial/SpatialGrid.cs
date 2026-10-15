@@ -6,13 +6,12 @@ namespace EcsEnemy
 {
 	public class SpatialGrid
 	{
-		private const float DefaultCellSize = 0.8f;
 		private const float MinCellSize = 0.01f;
 
 		private readonly Dictionary<Vector2Int, List<Entity>> _cells = new();
 		private readonly Stack<List<Entity>> _pool = new();
 
-		public float CellSize { get; private set; } = DefaultCellSize;
+		public float CellSize { get; private set; } = MinCellSize;
 
 		public void Clear(float cellSize)
 		{

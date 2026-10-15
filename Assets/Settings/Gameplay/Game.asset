@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7900812f44896a74280f180adb1ace5e, type: 3}
+  m_Name: Game
+  m_EditorClassIdentifier: 
+  _player: {fileID: 11400000, guid: 33072312a2942af48850fd89fb775395, type: 2}
+  _enemy: {fileID: 11400000, guid: 344b57e7bda62fd45af846f0b0cc4c72, type: 2}
+  _enemySpawn: {fileID: 11400000, guid: 378b1a927f51f3d4d9236bb0f2d16308, type: 2}
+  _arena: {fileID: 11400000, guid: a845ffe02b3e94c4a8e28d49c4ed38ef, type: 2}
+  _knockback: {fileID: 11400000, guid: 0ce59f2271e6d8947b7ebd5108587b48, type: 2}
+  _eyeAnimation: {fileID: 11400000, guid: a7bd91eeeab798e4d99d13b196855631, type: 2}
+  _damageFeedback: {fileID: 11400000, guid: 1aae4f14efc4e514aa540ffe39b7feca, type: 2}
+  _combatEffects: {fileID: 11400000, guid: 6dd84a706e90cc44c92e948525b59eb6, type: 2}
+  _simulation: {fileID: 11400000, guid: e6c4224814224bf43907e7c1d768115a, type: 2}
+  _input: {fileID: 11400000, guid: aa2797c7f27acfe49b44ec79f8811a70, type: 2}

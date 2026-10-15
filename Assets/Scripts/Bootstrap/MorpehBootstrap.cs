@@ -10,16 +10,9 @@ namespace EcsEnemy
 	public class MorpehBootstrap : MonoBehaviour
 	{
 		[SerializeField] private Transform _playerView;
-		[SerializeField] private CharacterEyesView _playerEyes;
 		[SerializeField] private EnemyPoolView _enemyPoolView;
 
-		[Space] [SerializeField, Min(0f)] private float _moveSpeed = 4f;
-		[SerializeField, Min(0f)] private float _enemySpeed = 2.5f;
-		[SerializeField, Min(0f)] private float _enemyStopDistance = 0.9f;
-		[SerializeField, Min(1)] private int _enemyCount = 20;
-		[SerializeField, Min(0f)] private float _enemyRespawnDelay = 3f;
-
-		[Space] [SerializeField] private Vector2 _movementBounds = new Vector2(7.5f, 4f);
+		[SerializeField] private GameConfig _config;
 
 		private EnemyPoolPresenter _enemyPool;
 
@@ -31,30 +24,22 @@ namespace EcsEnemy
 
 		private void Awake()
 		{
-			Utils.AssertIsNotNull(_playerView);
-			Utils.AssertIsNotNull(_playerEyes);
+			Utils.AssertIsNotNull(_config);
+			_config.Validate();
 			Utils.AssertIsNotNull(_enemyPoolView);
 		}
 
 		private void OnEnable()
 		{
+			_config.Validate();
+			_enemyPoolView.Configure(_config.Enemy, _config.DamageFeedback);
 			_enemyPool = new EnemyPoolPresenter(_enemyPoolView);
 			World = World.Create();
 			World.UpdateByUnity = false;
 
 			SystemsGroup systems = World.CreateSystemsGroup();
-			systems.AddInitializer(new SceneInitializer(_playerView,
-				_playerEyes,
-				_moveSpeed,
-				_enemyCount,
-				_movementBounds));
-
-			GameplaySystems.Register(systems,
-				_enemyPool,
-				_enemySpeed,
-				_enemyStopDistance,
-				_movementBounds,
-				_enemyRespawnDelay);
+			systems.AddInitializer(new SceneInitializer(_playerView, _config));
+			GameplaySystems.Register(systems, _enemyPool, _config);
 
 			World.AddSystemsGroup(0, systems);
 

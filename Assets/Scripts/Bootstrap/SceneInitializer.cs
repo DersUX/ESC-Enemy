@@ -6,16 +6,9 @@ namespace EcsEnemy
 {
 	public class SceneInitializer : IInitializer
 	{
-		private const float CharacterRadius = 0.4f;
-		private const float SpawnSpacing = 1f;
-		private const float PlayerAttackRadius = 2f;
-		private const float PlayerAttackCooldown = 0.5f;
-		private const float InitialAttackCooldownRemaining = 0f;
-		private const int PlayerAttackDamage = 25;
-
 		private readonly Transform _playerView;
 
-		private readonly CharacterEyesView _playerEyes;
+		private readonly GameConfig _config;
 
 		private readonly float _moveSpeed;
 		private readonly int _enemyCount;
@@ -29,26 +22,22 @@ namespace EcsEnemy
 			set;
 		}
 
-		public SceneInitializer(Transform playerView,
-			CharacterEyesView playerEyes,
-			float moveSpeed,
-			int enemyCount,
-			Vector2 movementBounds)
+		public SceneInitializer(Transform playerView, GameConfig config)
 		{
-			_playerView = playerView;
-			_playerEyes = playerEyes;
-			_moveSpeed = moveSpeed;
-			_enemyCount = Mathf.Max(1, enemyCount);
-			_mapHalfSize = new Vector2(Mathf.Abs(movementBounds.x), Mathf.Abs(movementBounds.y));
+			_config = config;
+			_playerView = playerView != null ? playerView : config.Player.Prefab.transform;
+			_moveSpeed = config.Player.MoveSpeed;
+			_enemyCount = config.EnemySpawn.Count;
+			_mapHalfSize = config.Arena.HalfSize;
 		}
 
 		public void OnAwake()
 		{
 			List<Vector2> spawnPositions = GetEnemySpawnPositions(_playerView.position);
 			Transform playerView = GetOrCreateSceneView(_playerView);
-			CharacterEyesView playerEyes = playerView == _playerView
-				? _playerEyes
-				: playerView.GetComponent<CharacterEyesView>();
+			CharacterEyesView playerEyes = playerView.GetComponent<CharacterEyesView>();
+			if (playerEyes == null)
+				throw new System.InvalidOperationException("Player view must have CharacterEyesView.");
 
 			Entity player = CreateCharacter(playerView, playerEyes, _moveSpeed);
 			World.GetStash<PlayerTag>().Set(player);
@@ -56,10 +45,10 @@ namespace EcsEnemy
 
 			World.GetStash<CircleAttack>().Set(player, new CircleAttack
 			{
-				Radius = PlayerAttackRadius,
-				Damage = PlayerAttackDamage,
-				Cooldown = PlayerAttackCooldown,
-				CooldownRemaining = InitialAttackCooldownRemaining
+				Radius = _config.Player.Attack.Radius,
+				Damage = _config.Player.Attack.Damage,
+				Cooldown = _config.Player.Attack.Cooldown,
+				CooldownRemaining = 0f
 			});
 
 			CreateEnemySpawnRequests(player, spawnPositions);
@@ -78,26 +67,27 @@ namespace EcsEnemy
 
 		private List<Vector2> GetEnemySpawnPositions(Vector2 playerPosition)
 		{
-			Vector2 bounds = _mapHalfSize - Vector2.one * CharacterRadius;
+			Vector2 bounds = _mapHalfSize - Vector2.one * _config.Enemy.Radius;
 
 			if (bounds.x < 0f || bounds.y < 0f)
 				throw new System.InvalidOperationException("The arena is too small to fit a character.");
 
-			int columns = Mathf.FloorToInt(bounds.x * 2f / SpawnSpacing) + 1;
-			int rows = Mathf.FloorToInt(bounds.y * 2f / SpawnSpacing) + 1;
+			int columns = Mathf.FloorToInt(bounds.x * 2f / _config.EnemySpawn.Spacing) + 1;
+			int rows = Mathf.FloorToInt(bounds.y * 2f / _config.EnemySpawn.Spacing) + 1;
 			var positions = new List<Vector2>();
 
-			playerPosition = MovementBounds.Clamp(playerPosition, bounds);
+			playerPosition = MovementBounds.Clamp(playerPosition,
+				MovementBounds.GetCenterLimits(_mapHalfSize, _config.Player.Radius));
 
-			float minDistance = CharacterRadius * 2f;
+			float minDistance = _config.Player.Radius + _config.Enemy.Radius;
 
 			for (int row = 0; row < rows && positions.Count < _enemyCount; row++)
 			{
 				for (int column = 0; column < columns && positions.Count < _enemyCount; column++)
 				{
 					var position = new Vector2(
-						-bounds.x + column * SpawnSpacing,
-						-bounds.y + row * SpawnSpacing);
+						-bounds.x + column * _config.EnemySpawn.Spacing,
+						-bounds.y + row * _config.EnemySpawn.Spacing);
 
 					if ((position - playerPosition).sqrMagnitude < minDistance * minDistance)
 						continue;
@@ -133,10 +123,10 @@ namespace EcsEnemy
 			World.GetStash<InputMovementDirection>().Set(entity);
 
 			Vector2 position = MovementBounds.Clamp(view.position,
-				MovementBounds.GetCenterLimits(_mapHalfSize, CharacterRadius));
+				MovementBounds.GetCenterLimits(_mapHalfSize, _config.Player.Radius));
 			World.GetStash<Position>().Set(entity, new Position { Value = position });
 
-			World.GetStash<CollisionRadius>().Set(entity, new CollisionRadius { Radius = CharacterRadius });
+			World.GetStash<CollisionRadius>().Set(entity, new CollisionRadius { Radius = _config.Player.Radius });
 
 			World.GetStash<Movement>().Set(entity, new Movement
 			{
@@ -145,7 +135,7 @@ namespace EcsEnemy
 			});
 
 			World.GetStash<TransformView>().Set(entity, new TransformView { Value = view });
-			World.GetStash<EyeAnimation>().Set(entity, eyes.CreateAnimation(position));
+			World.GetStash<EyeAnimation>().Set(entity, eyes.CreateAnimation(position, _config.EyeAnimation));
 
 			return entity;
 		}

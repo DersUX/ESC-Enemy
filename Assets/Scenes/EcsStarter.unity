@@ -180,14 +180,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _playerView: {fileID: 3545101816419312989, guid: 542a8234a865a5640b684c5892f787ad, type: 3}
-  _playerEyes: {fileID: 7456029885131247318, guid: 542a8234a865a5640b684c5892f787ad, type: 3}
   _enemyPoolView: {fileID: 2135190855}
-  _moveSpeed: 4
-  _enemySpeed: 1.5
-  _enemyStopDistance: 0.9
-  _enemyCount: 80
-  _enemyRespawnDelay: 3
-  _movementBounds: {x: 7.5, y: 4}
+  _config: {fileID: 11400000, guid: e8b6b1faa0fe9854ab476da2f6502525, type: 2}
 --- !u!4 &775029113
 Transform:
   m_ObjectHideFlags: 0
@@ -287,7 +281,7 @@ Camera:
   far clip plane: 50
   field of view: 60
   orthographic: 1
-  orthographic size: 5.5
+  orthographic size: 4.5
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
@@ -478,7 +472,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b5f9e7d966601440abb2aadaca6360d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _enemyPrefab: {fileID: 7495355522370537883, guid: 944363ae7782efb42b344eb2caf89751, type: 3}
   _activeContainer: {fileID: 869578407}
   _inactiveContainer: {fileID: 509681257}
 --- !u!4 &2135190856

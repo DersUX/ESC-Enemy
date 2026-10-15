@@ -5,8 +5,11 @@ namespace EcsEnemy
 {
 	public class CircleAttackHitSystem : ISystem
 	{
+		private readonly KnockbackConfig _config;
+
+		public CircleAttackHitSystem(KnockbackConfig config) => _config = config;
+
 		private const float MinImpulseDistanceSquared = 0.0001f;
-		private const float KnockbackImpulse = 9f;
 
 		public World World
 		{
@@ -62,8 +65,8 @@ namespace EcsEnemy
 						Target = enemy,
 						Amount = attack.Damage,
 						Impulse = (enemyPosition - attack.Center).sqrMagnitude > MinImpulseDistanceSquared
-							? (enemyPosition - attack.Center).normalized * KnockbackImpulse
-							: Vector2.up * KnockbackImpulse
+							? (enemyPosition - attack.Center).normalized * _config.Impulse
+							: Vector2.up * _config.Impulse
 					});
 				}
 

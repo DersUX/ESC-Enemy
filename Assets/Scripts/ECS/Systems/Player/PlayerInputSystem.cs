@@ -6,6 +6,13 @@ namespace EcsEnemy
 {
 	public class PlayerInputSystem : ISystem
 	{
+		private readonly InputConfig _config;
+		private InputActionAsset _actions;
+		private InputAction _move;
+		private InputAction _attack;
+
+		public PlayerInputSystem(InputConfig config) => _config = config;
+
 		public World World
 		{
 			get;
@@ -18,6 +25,12 @@ namespace EcsEnemy
 
 		public void OnAwake()
 		{
+			_config.Validate();
+			_actions = Object.Instantiate(_config.Actions);
+			_move = _actions.FindAction(InputConfig.MoveAction, true);
+			_attack = _actions.FindAction(InputConfig.AttackAction, true);
+			_move.actionMap.Enable();
+
 			_players = World.Filter
 				.With<PlayerTag>()
 				.With<InputMovementDirection>()
@@ -31,26 +44,13 @@ namespace EcsEnemy
 		public void OnUpdate(float deltaTime)
 		{
 			Vector2 direction = Vector2.zero;
-			Keyboard keyboard = Keyboard.current;
 
 			bool isAttackPressed = false;
 
-			if (keyboard != null && Application.isFocused)
+			if (Application.isFocused)
 			{
-				if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed)
-					direction.x -= 1;
-
-				if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed)
-					direction.x += 1;
-
-				if (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed)
-					direction.y -= 1;
-
-				if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed)
-					direction.y += 1;
-
-				if (keyboard.spaceKey.wasPressedThisFrame)
-					isAttackPressed = true;
+				direction = _move.ReadValue<Vector2>();
+				isAttackPressed = _attack.WasPressedThisFrame();
 			}
 
 			direction = Vector2.ClampMagnitude(direction, 1f);
@@ -64,6 +64,13 @@ namespace EcsEnemy
 
 		public void Dispose()
 		{
+			if (_actions == null)
+				return;
+			_actions.Disable();
+			Object.Destroy(_actions);
+			_actions = null;
+			_move = null;
+			_attack = null;
 		}
 	}
 }

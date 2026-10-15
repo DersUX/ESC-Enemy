@@ -5,7 +5,9 @@ namespace EcsEnemy
 {
 	public class KnockbackSystem : ISystem
 	{
-		private const float VelocityDecayRate = 14f;
+		private readonly KnockbackConfig _config;
+
+		public KnockbackSystem(KnockbackConfig config) => _config = config;
 
 		public World World
 		{
@@ -36,9 +38,9 @@ namespace EcsEnemy
 				ref Position position = ref _positions.Get(entity);
 
 				float step = Mathf.Min(deltaTime, hit.Remaining);
-				float decay = Mathf.Exp(-VelocityDecayRate * step);
+				float decay = Mathf.Exp(-_config.DecayRate * step);
 
-				position.Value += hit.Velocity * ((1f - decay) / VelocityDecayRate);
+				position.Value += hit.Velocity * ((1f - decay) / _config.DecayRate);
 				hit.Velocity *= decay;
 				hit.Remaining -= step;
 

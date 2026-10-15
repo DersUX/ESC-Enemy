@@ -5,7 +5,7 @@ namespace EcsEnemy
 {
 	public class ArenaCameraSystem : ISystem
 	{
-		private const float ArenaPadding = 0.5f;
+		private readonly ArenaConfig _config;
 
 		private readonly Vector2 _arenaHalfSize;
 		private readonly Camera _camera;
@@ -17,11 +17,11 @@ namespace EcsEnemy
 			set;
 		}
 
-		public ArenaCameraSystem(Camera camera, Vector2 movementBounds)
+		public ArenaCameraSystem(Camera camera, ArenaConfig config)
 		{
 			_camera = camera;
-			_arenaHalfSize = new Vector2(Mathf.Abs(movementBounds.x), Mathf.Abs(movementBounds.y)) +
-			                 Vector2.one * ArenaPadding;
+			_config = config;
+			_arenaHalfSize = config.HalfSize + Vector2.one * config.CameraPadding;
 		}
 
 		public void OnAwake()
@@ -39,7 +39,7 @@ namespace EcsEnemy
 			float halfWidth = _arenaHalfSize.x + Mathf.Abs(position.x);
 			float halfHeight = _arenaHalfSize.y + Mathf.Abs(position.y);
 
-			_camera.orthographicSize = Mathf.Max(_initialSize, Mathf.Max(halfHeight, halfWidth / _camera.aspect));
+			_camera.orthographicSize = Mathf.Max(_config.MinCameraSize, Mathf.Max(halfHeight, halfWidth / _camera.aspect));
 		}
 
 		public void Dispose()

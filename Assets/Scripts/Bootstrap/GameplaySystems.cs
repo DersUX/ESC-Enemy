@@ -6,41 +6,32 @@ namespace EcsEnemy
 {
 	public static class GameplaySystems
 	{
-		private const float DefaultEnemyRespawnDelay = 3f;
-		private const int SeparationPassCount = 2;
-
-		public static void Register(
-			SystemsGroup systems,
-			IEnemyPool pool,
-			float enemySpeed,
-			float enemyStopDistance,
-			Vector2 movementBounds,
-			float enemyRespawnDelay = DefaultEnemyRespawnDelay)
+		public static void Register(SystemsGroup systems, IEnemyPool pool, GameConfig config)
 		{
-			systems.AddSystem(new ArenaCameraSystem(Camera.main, movementBounds));
+			systems.AddSystem(new ArenaCameraSystem(Camera.main, config.Arena));
 			systems.AddSystem(new EnemyRespawnSystem());
-			systems.AddSystem(new EnemySpawnSystem(pool, enemySpeed, enemyStopDistance, movementBounds));
-			systems.AddSystem(new PlayerInputSystem());
+			systems.AddSystem(new EnemySpawnSystem(pool, config.Enemy, config.Arena, config.EyeAnimation));
+			systems.AddSystem(new PlayerInputSystem(config.Input));
 			systems.AddSystem(new EnemyFollowSystem());
 			systems.AddSystem(new MovementSystem());
 			systems.AddSystem(new CircleAttackSystem());
-			systems.AddSystem(new CircleAttackHitSystem());
-			systems.AddSystem(new ApplyDamageSystem());
-			systems.AddSystem(new CombatPresentationSystem());
-			systems.AddSystem(new KnockbackSystem());
-			systems.AddSystem(new DeathDetectionSystem(enemyRespawnDelay));
+			systems.AddSystem(new CircleAttackHitSystem(config.Knockback));
+			systems.AddSystem(new ApplyDamageSystem(config.Knockback));
+			systems.AddSystem(new CombatPresentationSystem(config.CombatEffects));
+			systems.AddSystem(new KnockbackSystem(config.Knockback));
+			systems.AddSystem(new DeathDetectionSystem(config.EnemySpawn));
 			systems.AddSystem(new EnemyDespawnSystem(pool));
 
 			SpatialGrid grid = new SpatialGrid();
 
-			for (int i = 0; i < SeparationPassCount; i++)
+			for (int i = 0; i < config.Simulation.SeparationPassCount; i++)
 			{
 				systems.AddSystem(new SpatialGridBuildSystem(grid));
 				systems.AddSystem(new SeparationSystem(grid));
 			}
 
 			systems.AddSystem(new TransformSyncSystem());
-			systems.AddSystem(new EyeAnimationSystem());
+			systems.AddSystem(new EyeAnimationSystem(config.EyeAnimation));
 		}
 	}
 }
